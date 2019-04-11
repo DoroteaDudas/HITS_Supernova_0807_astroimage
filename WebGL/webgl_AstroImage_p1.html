@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!-- @author: Dorotea Dudas	@date 20/02/18 -->
+<html>
+	<head lang="en">
+		<meta charset="utf-8"><meta name="author" content="Dorotea Dudas"><meta name="date" content="20-02-2018"> <!--scheme="DD-MM-YYYY"-->
+		<title>1. Astro Image Processing</title>
+		<style>
+			body {
+				font-family	: "HelveticaNeueLT Com 55 Roman", "Helvetica Neue LT Com", sans-serif;/*HelveticaN, sans-serif;*//*"Helvetica Neue LT Com", sans-serif;*//*"HelveticaNeueLT Com 45 Lt", "Helvetica Neue LT Com", sans-serif;*/
+				margin		: 0px;
+				background-color: #000000;
+				position	: absolute;
+				height		: 100%;
+				width		: 100%;
+				overflow	: hidden;
+			}
+			div {
+				position: relative;
+			}
+			img {
+				-moz-user-select	: none;
+				-webkit-user-select	: none;
+				-ms-user-select		: none;
+				user-select		: none;
+				-webkit-user-drag	: none;
+				user-drag		: none;
+				-webkit-touch-callout	: none;
+			}
+			font {
+				color: #BDBDBD;
+			}
+			
+			/*standard buttons*/
+			/*vertical alignment of the image within a div*/
+			.helper {
+				display: inline-block;
+				height: 100%;
+				vertical-align: middle;
+			}			
+			
+			/*dialog*/
+			.dlg-no-title .ui-dialog-titlebar {/*(.dlg-no-title dialog class; .ui-dialog-titlebar not used)*/
+				display: none;
+			}			
+			.ui-widget-content.ui-dialog {
+				background	: rgba(128,128,128,0.0) !important;
+				border		: 2px solid rgba(128,128,128,0.0);
+				/*place the dialog on the top of all buttons*/
+				position	: relative;
+				z-index		: 10;				
+			} 
+			#dialogHelp {
+				position	: relative;
+				z-index		: 3;
+				font-size	: 150%;
+				color		: #BDBDBD;
+				background	: rgba(128,128,128,0.6);
+			}
+		</style>
+		<script src="scripts/jquery-1.9.1.js"></script>
+		<script src="scripts/jquery-ui.js"></script>
+	</head>
+	<body>
+		<input type="hidden" id="refresh" value="no"><!-- to reload() after back/home has been used in the next page -->
+		<div id="TopDiv" style="top: 6%;text-align: center;">
+			<font><table id="AdjustTable" align="center"><tr></table></font>
+		</div>
+	
+		<script>//fill the AdjustTable using the json base
+			{//parameters
+			var second_page = "webgl_AstroImage_p2.html";
+			var json_base = "image_data_sets.json";
+			
+			var text_title_EN = 'Choose an object';
+			var text_title_DE = 'Wählen Sie ein Objekt';
+			var text_title_size_percent = 150;
+			
+			var image_button_width = 220;
+			var image_button_height = 220;
+			var image_button_border_color = '#0077be';
+			}
+			
+			function getUrlVars(){
+				var vars = {};
+				var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
+					function(m,key,value) {
+						vars[key] = value;
+					}
+				);
+				return vars;
+			}    
+			function htmlInsertTitle(){//into TopDiv
+				var text_html = "";
+				if(getUrlVars()["lang"] == "en") text_html = "<font style='font-size: "+text_title_size_percent+"%;'>"+text_title_EN+"<br><br></font>";  
+				if(getUrlVars()["lang"] == "de") text_html = "<font style='font-size: "+text_title_size_percent+"%;'>"+text_title_DE+"<br><br></font>";  
+				if(!getUrlVars()["lang"]) text_html = "<font style='font-size: "+text_title_size_percent+"%;'>"+text_title_EN+"<br><br></font>";  
+				
+				var topdiv = document.getElementById("TopDiv");
+				topdiv.insertAdjacentHTML("afterbegin", text_html);//topdiv.innerHTML += text_html;
+			}
+			
+			window.onload = function(e) {
+				htmlInsertTitle();//insert "title" text into TopDiv
+				
+				$.getJSON(json_base, function(json) {
+					var length = json.length;//number of data sets (works with array, not objects!)
+
+					{//set html (go through all objects and fill up the html table (cells and id's) AdjustTable)
+					var html = '';
+					
+					for (i=0;i<length;i++) {
+						var id = json[i].id; 
+						var mainImage = json[i].main;
+						
+						if((i)%3==0) html += '</tr><tr>';//new line (table row) after 3 objects
+						html += '<td id="'+id+'" ></td>';//style="position: absolute; top: 16px; left: 40px; height:500px; width:1128px;"//style="width:100px;"
+						if(i==length-1) html += '</tr>';//finish the row if last object
+					}//objects
+									
+					var results = document.getElementById("AdjustTable");
+					results.innerHTML += html;	
+					}//finnished setting html
+					
+					{//set jquery buttons (button per image)
+// 					$(function() {
+					for (i=0;i<length;i++) {//go through all objects again (for ids)
+						var id = json[i].id; 	
+						var mainImage = json[i].main;
+					
+						$("#"+id)
+						.text("  ") // sets text to empty
+						.append("<img style='width:"+image_button_width+"px;height:"+image_button_height+"px;border: 2px solid "+image_button_border_color+";' src="+mainImage+" />")
+						.button()
+						.bind("click touchstart", 
+							function() { 
+								var HB_APP_ID = getUrlVars()["HB_APP_ID"];
+								var HB_URL = getUrlVars()["HB_URL"];
+					
+								//load with same url parameter (keep language)
+								if(getUrlVars()["lang"] == "en") lang="en";
+								if(getUrlVars()["lang"] == "de") lang="de";
+								if(!getUrlVars()["lang"]) lang="en";//had default values (en as default)			
+
+								//heartbeat forwarding (forward the HB_APP_ID/HB_URL to the part2) (also forward language)
+								window.location.href = second_page + "?id="+this.id+"&lang="+lang+"&HB_APP_ID="+HB_APP_ID+"&HB_URL="+HB_URL;
+							});		
+					}
+// 					});	//jquery
+					}
+				});//json
+			}//window.onload()
+		</script>
+
+		<script>//reload (to reload() after back/home has been used in the next page)
+			$(document).ready(function(e) {
+				var $input = $('#refresh');
+				$input.val() == 'yes' ? location.reload(true) : $input.val('yes');
+			});
+		</script>
+		
+		<div id="resetButton"></div>
+		<div id="languageButton"></div>
+		<div id="dialogHelp" title="Dialog" align="center" ></div>	
+		<div id="infoButton"></div>			
+		<script>//standard buttons (don't forget:
+			//* the images (4x icons, 2x help/info screens), 
+			//* css elements (.helper, #dialogHelp), 
+			//* adjust with the other URL parameters (in #languageButton),
+			//* need customHeight, customWidth (customWidth = getWindowDimensions().width;) ; (also uses controls - can be commented out if not there)
+			//)
+
+			function AddDialog(elementName, content){//needs .helper class
+				$(elementName).empty();
+				
+				//vertical alignment of the image within a div
+				var content2 = "<span class='helper'></span>";
+				$(content2).appendTo(elementName);
+				
+				$(content).appendTo(elementName);
+				$(elementName).dialog("open");
+			}
+			
+			{///parameters (using customHeight, customWidth)
+			//button positioning
+			var standard1_left = 20;
+			var standard2_left = 120;//1554;
+			var standard3_left = 220;
+			var standard_bottom = 20;
+			
+			//dialog parameters
+			var dialog_height = window.innerHeight;
+			var dialog_width = window.innerWidth-4;
+			var dialog_left = 0;
+			var dialog_up = 0;			
+			}
+			{//load images
+			var button_reset = "Images/Icons/icon_blue_reload.png";
+			var button_info = "Images/Icons/icon_blue_help.png";
+			var button_language = "Images/Icons/icon_blue_DE.svg";	
+			var lang = "en";			
+			
+			//language button image //change icon image (offer opposite image)
+			if(getUrlVars()["lang"] == "en") button_language = "Images/Icons/icon_blue_DE.svg";
+			if(getUrlVars()["lang"] == "de") button_language = "Images/Icons/icon_blue_EN.svg";
+			
+			//help screen images
+			var info_imageEN ='Images/0807_astronomical_image_processing_help_screens_ES_interactives_EN_01.png';
+			var info_imageDE ='Images/0807_astronomical_image_processing_help_screens_ES_interactives_DE_01.png';				
+			var info_image_width = 1700;//1500;
+			}			
+
+			$(function() 
+			{
+				{//reset button
+				$("#resetButton")
+				.text("") // sets text to empty
+				.css(
+					{ "z-index":"2",
+					"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+					"position":"absolute", "bottom":standard_bottom+"px", "left":standard1_left+"px", 
+					"border": "none"
+					}) // adds CSS
+				.append("<img width='80' height='80' src="+button_reset+" />")
+				.button()
+				.click( 
+					function() { 
+						window.location.reload(true);
+					});
+				}
+				
+				{//language change button (adjust to other URL parameters!)
+				$("#languageButton")
+				.text("") // sets text to empty
+				.css(
+					{ "z-index":"2",
+					"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+					"position":"absolute", "bottom":standard_bottom+"px", "left":standard2_left+"px", 
+					"border": "none"
+					}) // adds CSS
+				.append("<img width='80' height='80' src="+button_language+" />")
+				.button()
+				.click( 
+					function() { 
+						//reload with different url parameter (change language)
+						if(getUrlVars()["lang"] == "en") lang="de";
+						if(getUrlVars()["lang"] == "de") lang="en";
+						if(!getUrlVars()["lang"]) lang="de";//had default values (en as default)
+
+						//no grid parameter
+						window.location.href = window.location.pathname+"?lang="+lang;
+					});
+				}
+				
+				{//info/help dialog - needs CSS setup and dialog parameters
+				$("#dialogHelp").dialog({
+					autoOpen: false,
+					modal: false,
+					dialogClass: "dlg-no-title",
+					resizable: false,
+					height: dialog_height,
+					width: dialog_width,
+					position: [dialog_left,dialog_up],//left, top
+					clickOutside: true, // clicking outside the dialog will close it
+					clickOutsideTrigger: "#infoButton"  // Element (id or class) that triggers the dialog opening 
+				})
+				.mouseenter(function(){
+				})
+				.mouseleave(function(){
+				})
+				.click( 
+					function() { 
+						$("#dialogHelp").dialog("close");//close dialog
+					});	
+				}
+				
+				{//info/help button - needs #dialogHelp and AddDialog() function
+				$("#infoButton")
+				.text("") // sets text to empty
+				.css(
+					{ "z-index":"2",
+					"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+					"position":"absolute", "bottom":standard_bottom+"px", "left":standard3_left+"px", 
+					"border": "none"
+					}) // adds CSS
+				.append("<img width='80' height='80' src="+button_info+" />")
+				.button()
+				.click( 
+					function() { 
+						if(getUrlVars()["lang"] == "en") AddDialog("#dialogHelp", "<img src="+info_imageEN+" width="+info_image_width+" style='vertical-align:middle;'></img>");
+						if(getUrlVars()["lang"] == "de") AddDialog("#dialogHelp", "<img src="+info_imageDE+" width="+info_image_width+" style='vertical-align:middle;'></img>");
+						if(!getUrlVars()["lang"]) AddDialog("#dialogHelp", "<img src="+info_imageEN+" width="+info_image_width+" style='vertical-align:middle;'></img>");//had default values (en as default)
+					});
+				}
+			});
+		</script>	
+	</body>
+</html>

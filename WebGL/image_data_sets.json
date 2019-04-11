@@ -1,0 +1,434 @@
+[
+	{
+			"id": "antennae",
+			"description": "The Antennae galaxies colliding",
+			"main": "Images/data/antennae/antennae_525.jpg",
+			"empty":  "Images/data/antennae/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/antennae/antennae_x_gray.jpg",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/antennae/antennae_v_gray.jpg",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},
+			{
+				"name": "Images/data/antennae/antennae_i_gray.jpg",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			}
+			]
+        },
+	{
+			"id": "gioiello",
+			"description": "il Gioiello Galaxy Cluster",
+			"main": "Images/data/gioiello/xdcp004_525.jpg",
+			"empty": "Images/data/gioiello/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/gioiello/xdcp004_x_gray.jpg",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/gioiello/xdcp004_v_gray.jpg",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},
+			{
+				"name": "Images/data/gioiello/xdcp004_i_gray.jpg",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			}
+			]
+        }, 
+	{
+			"id": "m106",
+			"description": "M106: A spiral galaxy",
+			"main": "Images/data/m106/m106_525.jpg",
+			"empty": "Images/data/m106/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/m106/m106_x_gray.jpg",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/m106/m106_v_gray.jpg",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},
+			{
+				"name": "Images/data/m106/m106_i_gray.jpg",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}				
+			},
+			{
+				"name": "Images/data/m106/m106_r_gray.jpg",
+				"type": "r",
+				"coor": {
+					"x": "590",
+					"y": "220"
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			}
+			]
+        },
+	{
+			"id": "NGC1929",
+			"description": "NGC 1929: A star cluster embedded in the N44 nebula",
+			"main": "Images/data/n1929/n1929_525.jpg",
+			"empty": "Images/data/n1929/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/n1929/n1929_x_gray.jpg",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/n1929/n1929_v_gray.jpg",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},
+			{
+				"name": "Images/data/n1929/n1929_i_gray.jpg",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			}
+			]
+        },
+	{
+			"id": "NGC602",
+			"description": "NGC 602: A dwarf galaxy 'Small Magellanic Cloud'",
+			"main": "Images/data/ngc602/ngc602_525.jpg",
+			"empty": "Images/data/ngc602/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/ngc602/ngc602_x_gray.jpg",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/ngc602/ngc602_v_gray.jpg",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},
+			{
+				"name": "Images/data/ngc602/ngc602_i_gray.jpg",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			},
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			}
+			]
+        },
+        {
+			"id": "m101",
+			"description": "M101: Pinwheel Galaxy",
+			"main": "Images/data/m101/m101_525.jpg",
+			"empty": "Images/data/m101/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/m101/m101_x_gray.jpg",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/m101/m101_i_gray.jpg",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}
+			},
+			{
+				"name": "Images/data/m101/m101_u_gray.jpg",
+				"type": "u",
+				"coor": {
+					"x": "590",
+					"y": "680"
+				}				
+			},
+			{
+				"name": "Images/data/m101/m101_v_gray.jpg",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},			
+			{
+				"name": "",
+				"type": "",
+				"coor": {
+					"x": "",
+					"y": ""
+				}				
+			}
+			]
+        },
+        {
+			"id": "m1",
+			"description": "M1: Crab Nebula",
+			"main": "Images/data/m1/M1_525.png",
+			"empty": "Images/data/m1/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/m1/M1_x_gray.png",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/m1/M1_i_sp4a_gray.png",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}
+			},
+			{
+				"name": "Images/data/m1/M1_u_gray.png",
+				"type": "u",
+				"coor": {
+					"x": "590",
+					"y": "680"
+				}				
+			},
+			{
+				"name": "Images/data/m1/M1_v_VLT_gray.png",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},			
+			{
+				"name": "Images/data/m1/M1_r_gray.png",
+				"type": "r",
+				"coor": {
+					"x": "590",
+					"y": "220"
+				}				
+			}
+			]
+        },         
+        {
+			"id": "m42",
+			"description": "M42: Orion Nebula",
+			"main": "Images/data/m42/M42_525.png",
+			"empty": "Images/data/m42/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/m42/gray_M42_v_LaSilla2.png",
+				"type": "x",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},		
+			{
+				"name": "Images/data/m42/gray_M42_v_AAO.png",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "425"
+				}				
+			},		
+			{
+				"name": "Images/data/m42/gray_M42_i_Herschel4.png",
+				"type": "u",
+				"coor": {
+					"x": "590",
+					"y": "495"
+				}
+			},						
+			{
+				"name": "Images/data/m42/gray_M42_i_spitzer1.png",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "585"
+				}
+			},			
+			{
+				"name": "Images/data/m42/gray_M42_r_VLA1.png",
+				"type": "r",
+				"coor": {
+					"x": "590",
+					"y": "220"
+				}				
+			}
+			]
+        },
+	{
+			"id": "antennae2",
+			"description": "The Antennae galaxies colliding",
+			"main": "Images/data/antennae2/Ant_525.png",
+			"empty":  "Images/data/antennae2/empty2.png",
+			"images": [
+			{
+				"name": "Images/data/antennae2/gray_Ant_x_Chandra3color.png",
+				"type": "x",
+				"coor": {
+					"x": "590",
+					"y": "780"
+				}				
+			},
+			{
+				"name": "Images/data/antennae2/gray_Ant_u.png",
+				"type": "u",
+				"coor": {
+					"x": "590",
+					"y": "680"
+				}				
+			},			
+			{
+				"name": "Images/data/antennae2/gray_Ant_v_heic2.png",
+				"type": "v",
+				"coor": {
+					"x": "820",
+					"y": "625"
+				}				
+			},
+			{
+				"name": "Images/data/antennae2/gray_Ant_i_Spitzer.png",
+				"type": "i",
+				"coor": {
+					"x": "590",
+					"y": "535"
+				}				
+			},
+			{
+				"name": "Images/data/antennae2/gray_Ant_r_VLA.png",
+				"type": "r",
+				"coor": {
+					"x": "590",
+					"y": "220"
+				}				
+			}
+			]
+        }   
+]

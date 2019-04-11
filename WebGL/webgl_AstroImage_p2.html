@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<!-- @author: Dorotea Dudas	@date 20/02/18 -->
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="author" content="Dorotea Dudas"><meta name="date" content="20-02-2018"> <!--scheme="DD-MM-YYYY"-->
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>2. Astro Image Processing</title>
+		<style>
+			* {
+				font-family		: "HelveticaNeueLT Com 55 Roman", "Helvetica Neue LT Com", sans-serif;/*HelveticaN, sans-serif;*//*"Helvetica Neue LT Com", sans-serif;*//*"HelveticaNeueLT Com 45 Lt", "Helvetica Neue LT Com", sans-serif;*/
+				box-sizing		: border-box;
+				-moz-box-sizing		: border-box;
+				/* disable text selection */	
+				-webkit-touch-callout	: none;
+				-webkit-user-select	: none;
+				-khtml-user-select	: none;
+				-moz-user-select	: none;
+				-ms-user-select		: none;
+				user-select		: none;				
+				touch-action: manipulation;
+			}
+			body {
+				color		: #000;
+				font-size	: 13px;
+				background-color: #000;
+				margin		: 0px;
+				overflow	: hidden;	
+				position	: absolute;	
+				height		: 100%;
+				width		: 100%;
+			}
+			a {
+				color		: #0080ff;
+			}
+			div {
+				position	: relative;
+			}
+			td {
+				vertical-align	: top;
+			}
+			font{
+				color		: #BDBDBD;
+			}
+			img {
+				-moz-user-select	: none;
+				-webkit-user-select	: none;
+				-ms-user-select		: none;
+				user-select		: none;
+				-webkit-user-drag	: none;
+				user-drag		: none;
+				-webkit-touch-callout	: none;			
+			}
+			
+			#dialogDefault {
+				z-index		: 2;
+				font-size	: 110%;
+				color		: #BDBDBD;
+				padding		: 5px;
+				padding-top	: 5px;
+				padding-bottom	: 5px;
+				border-radius	: 0px;
+				border-color	: rgba(0,119,190,1.0);
+				border-style	: solid;
+				border-width	: 2px;					
+				text-align	: left;
+			}	
+			
+			/* td id's */
+			#drop-box1, #drop-box2, #drop-box3{
+				height		: 320px; 
+				width		: 400px;			
+			}
+			#drop-box1{
+				color			: red;
+				text-align		: center;
+				background-position	: center;
+			}
+			#drop-box2{
+				color			: green;
+				text-align		: center;
+				background-position	: center;
+			}
+			#drop-box3{
+				color			: blue;
+				text-align		: center;
+				background-position	: center;
+			}
+			#drop-box4{
+				color			: white;
+				text-align		: center;
+				position		: relative;
+				background-position	: center;
+				width			: 600px;
+				height			: 562px;
+			}			
+			
+			/* img id's */
+			#s1, #s2, #s3, #s4, #s5 {/* if NI changes additional slots need to also be added here */
+ 				width		:100px; 
+				height		:100px; 
+			}
+			#test1, #test2, #test3{
+	 			width		:260px; 
+				height		:260px; 						
+			}
+
+			/* canvas id's (webgl) */
+			#c1 {/* in drop-box1 */
+				position	: absolute;
+				top		: 36px; 
+				left		: 608px;
+				z-index		: -10;
+			}
+			#c2 {/* in drop-box2 */
+				position	: absolute;
+				top		: 358px; 
+				left		: 608px;
+				z-index		: -10;
+			}
+			#c3 {/* in drop-box3 */
+				position	: absolute;
+				top		: 680px; 
+				left		: 608px;
+				z-index		: -10;
+			}
+			#c4 {/* in drop-box4 */
+				position	: absolute;
+				top		: 0px; 
+				left		: 0px;
+				z-index		: -10;
+			}
+			
+			/*standard buttons*/
+			/*vertical alignment of the image within a div*/
+			.helper {
+				display: inline-block;
+				height: 100%;
+				vertical-align: middle;
+			}			
+			
+			/*dialog*/
+			.dlg-no-title .ui-dialog-titlebar {/*(.dlg-no-title dialog class; .ui-dialog-titlebar not used)*/
+				display: none;
+			}			
+			.ui-widget-content.ui-dialog {
+				background	: rgba(128,128,128,0.0) !important;
+				border		: 2px solid rgba(128,128,128,0.0);
+				/*place the dialog on the top of all buttons*/
+				z-index		: 10;				
+ 			} 
+			#dialogHelp {/* position in dialogUpdatePosition() */
+				position	: relative;
+				z-index		: 3;
+				font-size	: 150%;
+				color		: #BDBDBD;
+				background	: rgba(128,128,128,0.6);
+			}
+			
+			/* zoom */
+			#resetButton {/* stick to the left corner */
+				transform-origin: 0% 0%;
+			}				
+			#previousButton {
+				transform-origin: 0% 0%;
+			}
+	
+			/*blinking button*/
+			.button {
+				background-color	: #FFFFFF;
+				-webkit-border-radius	: 0px;
+				border-radius		: 0px;
+				border			: none;
+				color			: #FFFFFF;
+				cursor			: pointer;
+				display			: inline-block;
+				font-size		: 2px;
+				padding			: 2px 2px;
+				text-align		: center;
+				-webkit-animation	: glowing 2500ms infinite;
+				-moz-animation		: glowing 2500ms infinite;
+				-o-animation		: glowing 2500ms infinite;
+				animation		: glowing 2500ms infinite;
+			}
+			@-webkit-keyframes glowing {
+				0% { background-color: #FFFFFF; -webkit-box-shadow: 0 0 3px #FFFFFF; }
+				50% { background-color: #0077be; -webkit-box-shadow: 0 0 3px #0077be; }
+				100% { background-color: #FFFFFF; -webkit-box-shadow: 0 0 3px #FFFFFF; }
+			}
+			@-moz-keyframes glowing {
+				0% { background-color: #FFFFFF; -moz-box-shadow: 0 0 3px #FFFFFF; }
+				50% { background-color: #0077be; -moz-box-shadow: 0 0 3px #0077be; }
+				100% { background-color: #FFFFFF; -moz-box-shadow: 0 0 3px #FFFFFF; }
+			}
+			@-o-keyframes glowing {
+				0% { background-color: #FFFFFF; box-shadow: 0 0 3px #FFFFFF; }
+				50% { background-color: #0077be; box-shadow: 0 0 3px #0077be; }
+				100% { background-color: #FFFFFF; box-shadow: 0 0 3px #FFFFFF; }
+			}
+			@keyframes glowing {
+				0% { background-color: #FFFFFF; box-shadow: 0 0 3px #FFFFFF; }
+				50% { background-color: #0077be; box-shadow: 0 0 3px #0077be; }
+				100% { background-color: #FFFFFF; box-shadow: 0 0 3px #FFFFFF; }
+			}
+		</style>
+		<link  href="scripts/jquery-ui.css" rel="stylesheet"> <!--change .ui-widget-header .ui-state-default border to 0px, also ui-state-focus, ui-state-active-->
+		<script src="scripts/jquery-1.9.1.js"></script>
+		<script src="scripts/jquery-ui.js"></script>	
+		<script src="scripts/jquery.rwdImageMaps.min.js"></script>
+		<script src="scripts/jquery.maphilight.js"></script>
+		<script src="text.js"></script>
+	</head>
+	<body>
+		<map name="map4">
+			<area draggable="false" shape="rect" coords="10,102,286,253" name="radio" />
+			<area draggable="false" shape="rect" coords="10,265,286,411" name="micro" />
+			<area draggable="false" shape="rect" coords="10,422,285,562" name="infra" />
+			<area draggable="false" shape="rect" coords="10,574,285,603" name="visible" />
+			<area draggable="false" shape="rect" coords="10,616,286,665" name="ultra" />
+			<area draggable="false" shape="rect" coords="10,672,286,797" name="xray" />
+			<area draggable="false" shape="rect" coords="10,806,286,844" name="gamma" />
+			<area draggable="false" shape="rect" coords="364,146,495,788" name="visible" />
+	<!-- 		<area draggable="false" shape="rect" coords="100,857,169,886" name="frequency" /> -->
+	<!-- 		<area draggable="false" shape="rect" coords="247,858,302,886" name="wavelength" /> -->
+		</map>	
+		<div align="center" id="TopDiv"><font> <!-- for the title --><!-- Choose 3 Filter Band Color Ranges (Choose Your Observations) and Assign Them Into Color Channels -->
+		<table align="left" style="width:1900px;"> <!--content-->
+		  <tr>
+			<td align="center" valign="center"  style="width:600px"> 
+				<!-- if I keep the image within the AdjustTable div mouseover is not visible -->
+				<img draggable="false" class="map" usemap="#map4" id="EM" style="position: relative; top: 0px; left: 0px; height:901px; width:500px;">
+				<div id="AdjustTable" style="position: relative; top: -1000px; left: -400px;"></div>
+			</td>
+			
+			<td align="left" valign="top" style="width:400px;">
+				<table align="center" >
+					<tr>	
+						<td id="drop-box1" ><img draggable="false" class="dropArea" id="test1" ><canvas id="c1" width="392" height="320"></canvas></td>    
+					</tr>
+					<tr>
+						<td id="drop-box2" ><img draggable="false" class="dropArea" id="test2"><canvas id="c2" width="392" height="320"></canvas></td>
+					</tr>
+					<tr>
+						<td id="drop-box3" ><img draggable="false" class="dropArea" id="test3"><canvas id="c3" width="392" height="320"></canvas></td>
+					</tr>
+				</table>
+			</td>
+		    
+			<td valign="bottom" >
+				<table align="left" style="width:900px;">
+					<tr>
+						<td align="center" id="dialogSpace" style="height:220px;"><!--fit the dialog dimensions -->
+							<div id="dialogDefault" title="Dialog" align="center" >
+						</td>  			    
+					</tr>	
+					<tr>
+						<td align="center" id="drop-box4"><canvas id="c4" width="894" height="560"></canvas>
+						</td>	
+					</tr>			
+				</table>	
+			</td>
+		  </tr> 
+		</table>  
+		</font></div>
+		
+		<script src="scripts/three82.js"></script>
+		<script src="scripts/OrbitControls.js"></script>
+			
+		<script id="fragmentShaderBlob" type="x-shader/x-fragment">
+			uniform float time;
+			uniform vec2 resolution;
+			uniform float posX;
+			uniform float posY;
+			uniform vec3 color;
+			uniform int scene;
+			varying vec2 vUv;
+				
+			#define SPECULAR_THRESHOLD 0.5// This is the cut off point for the specular. 
+			#define SPECULAR_PRE_CLAMP_MULTIPLIER 50.0// This gives the specular its soft edge. Lower = softer
+			#define SPECULAR_MULTIPLIER 0.5// The specular will never be brighter than this.
+			#define SPECULAR_POWER 5.0// If this gets smaller, the white specular gets bigger.
+			#define MAX_REFLECTION 0.95// Amount of reflection at edge of blob. Simulates fresnel I guess.
+			#define MIN_REFLECTION 0.0// Amount of reflection at center of blob. Simulates fresnel I guess.
+			#define REFLECTION_POWER 1.5
+			// Circles are generated by calculating the distance from the pixel to the center of the circle. This is then normalized to [0-1] with 0 being at the EDGE and 1 being at the center.
+			// Circle fall represents the threshold value that defines the boundaries of the goo. The name just comes from the fact that we're making the "heightmap" fall down this many units.
+			#define CIRCLE_FALL 0.8
+			// This is the height of each blob. Too much and you'll lose the soft edges.
+			#define CIRCLE_HEIGHT 67.0
+			#define CIRCLE_RADIUS (resolution.x / 7.0)
+			#define CIRCLE_DISTANCE (resolution.x / 6.0)
+			#define CIRCLE_COLOUR_B vec3(1.0, 0.7, 0.3)
+			
+			vec4 sampleOneCircle(vec2 circlePos, vec2 f, vec3 colour){//used in sampleOneMovingCircle()
+				float circle = distance(f, circlePos);
+				circle = circle / CIRCLE_RADIUS;
+				circle *= circle;
+				circle = max(0.0, min(1.0, 1.0 - circle));
+				circle *= circle;
+				return vec4(colour, circle);
+			}
+			vec2 noise(int xInt, float time){//used in sampleOneMovingCircle()
+				float t = time;
+				float x = float(xInt + 1);
+				float d = sin(t/5. * x * 0.2852231);
+				float r = t/2. * (x * 0.123652);
+				return vec2(cos(r) * d, sin(r) * d);
+			}
+			vec2 noise2(int xInt, float time){//used in sampleOneMovingCircle()
+				float t = time/2.;
+				float x = float(xInt + 1);
+				float d = sin(t/5. * x * 0.5852231);
+				float r = t/2. * (x * 0.423652);
+				return vec2(cos(r) * d, sin(r) * d);
+			}
+			vec2 noise3(int xInt, float time){//green//used in sampleOneMovingCircle()
+				float t = time/2.;
+				float x = float(xInt + 1);
+				float d = sin(t/5. * x * 0.22498384);
+				float r = t/2. * (x * 0.173652);
+				return vec2(cos(r) * d, sin(r) * d);
+			}			
+			vec2 noise4(int xInt, float time){//used in sampleOneMovingCircle()
+				float t = time/3.;
+				float x = float(xInt + 1);
+				float d = sin(t/4. * x * 0.9056097);
+				float r = t/2. * (x * 0.523652);
+				return vec2(cos(r) * d, sin(r) * d);
+			}
+			vec4 sampleOneMovingCircle(int i, vec2 fragPos){//using noise functions //used in sampleCircle()
+				vec2 n = noise(i, time) * CIRCLE_DISTANCE;
+				if(scene==1) {//green
+					n = noise3(i, time) * CIRCLE_DISTANCE;
+				}
+				if(scene==2) {//blue
+					n = noise4(i, time) * CIRCLE_DISTANCE;
+				}				
+				if(scene==3) {//colorful
+					n = noise2(i, time) * CIRCLE_DISTANCE;
+				}
+				
+				float x = resolution.x / 2.0 + n.x;
+				float y = resolution.y / 2.0 + n.y;
+				vec2 n2 = noise(i * 3, time / 10.0);
+				vec3 col = color + n2.x * (CIRCLE_COLOUR_B - color);
+				if(scene==3) {//colorful splash
+					int m = i - (3*int(i/3));//modulus via int
+					//I get 1 and 2 not 0
+					col =  vec3(float(i), 0.0, 0.0);
+// 					if(m==0) col = vec3(m, 0.0, 0.0);
+					if(m==1) col = vec3(0.0, m, 0.0);
+					if(m==2) col = vec3(0.0, 0.0, m);
+				}
+				return sampleOneCircle(vec2(x, y), fragPos, col);
+			}
+			mat4 sampleCircle(vec2 fragCoord){//number of circles composing the blob / splash //used in main() (not using retn[1])
+				float circle = 0.0;
+				vec4 circleColour = vec4(0.0, 0.0, 0.0, 0.0);
+				
+				for (int i = 0; i < 15; i++) {//10 circles
+					vec4 c = sampleOneMovingCircle(i, fragCoord);
+					circle = circle * (1.0 - c.a) + c.a;
+					circleColour += vec4(c.rgb * c.a, c.a);
+				}
+				circleColour /= circleColour.a;
+				
+				circle -= CIRCLE_FALL;
+				circle /= (1.0 - CIRCLE_FALL);
+				circle = sqrt(circle + 0.3) - 0.25;
+				circle = clamp(circle, 0.0, 1.0);
+				
+				mat4 retn;
+				retn[0] = vec4(circleColour.rgb, circle);
+				retn[1] = vec4(fragCoord, circle * CIRCLE_HEIGHT, 0.0);
+				return retn;
+			}
+
+			void main(){
+				vec2 uv = vec2(gl_FragCoord.x - posX, gl_FragCoord.y - posY); 
+
+				mat4 circle = sampleCircle(uv);
+				float circleMask = max(0.0, min(1.0, (circle[1].z)));
+				vec3 circleTL = sampleCircle(uv )[1].xyz;
+				vec3 circleTR = sampleCircle(uv + vec2(0.2, 0.0))[1].xyz;
+				vec3 circleBL = sampleCircle(uv + vec2(0.0, -0.2))[1].xyz;
+// 				vec3 circleBR = sampleCircle(uv + vec2(0.0, -0.2))[1].xyz;
+		
+				vec3 xgrad = (circleTL - circleTR);
+				vec3 ygrad = (circleTL - circleBL);
+				vec3 normal_bias = vec3(1.0,1.0,1.0);
+				vec3 normal = -cross(xgrad * normal_bias, ygrad * normal_bias);
+				normal = normalize(normal);
+				
+				vec3 lightDir = normalize(vec3(cos(time), sin(time), 0.1));
+				
+				float specularReflectionRaw;// https://en.wikibooks.org/wiki/GLSL_Programming/GLUT/Specular_Highlights
+				if (dot(normal, lightDir) < 0.0) {
+					specularReflectionRaw = 0.0;
+				} else {
+					specularReflectionRaw = pow(dot(reflect(-lightDir, normal), vec3(0.0, 0.0, 1.0)), SPECULAR_POWER);
+				}
+				float specularReflection = specularReflectionRaw;
+				specularReflection -= SPECULAR_THRESHOLD;
+				specularReflection *= SPECULAR_PRE_CLAMP_MULTIPLIER;
+				specularReflection = clamp(specularReflection, 0.0, 1.0);
+				vec4 spec = vec4(1, 1, 1, 0.0) * specularReflection * SPECULAR_MULTIPLIER;
+				
+				vec4 col = vec4(circle[0].rgb, 1.0);//Get the colour of the blob as a vec4.
+				float lighting = dot(lightDir, normal);// SSS Multiplier. 
+				float sss = (lighting * 0.3 + 0.7) * (1.0 - circle[0].a * 0.6);
+				float k = MIN_REFLECTION + pow(1.0 - circle[0].a, REFLECTION_POWER) * (MAX_REFLECTION - MIN_REFLECTION);// k mixes texure and a solid colour. If k is 0.0, then the texture is a solid colour.
+				float ik = 1.0 - k; // "Inverse" of k, just to save letters!
+				col = (k + vec4(ik, ik, ik, ik) * sss) * col;
+				
+				gl_FragColor = (spec + col) * circleMask;
+				gl_FragColor.a = 1.0;
+			}
+		</script>
+		<script id="vertexShaderBlob" type="x-shader/x-vertex">
+			varying vec2 vUv;
+			void main() {
+				vUv = uv;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}			
+		</script>
+
+		<script>//webgl functions
+			function getWindowDimensions(){
+				{//Width, Height
+				var w = window,
+					d = document,
+					e = d.documentElement,
+					g = d.getElementsByTagName('body')[0],
+					x = w.innerWidth || e.clientWidth || g.clientWidth,
+					y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+				}	
+				
+				return {
+					width:  x,
+					height: y
+				}
+			}	
+				
+			//setup three scene
+			function InitThreeCanvasRenderers(canvas1, canvas2, canvas3, canvas4){
+				renderer1 = new THREE.WebGLRenderer( { canvas: canvas1, antialias: true } );
+				renderer1.setClearColor( 0xffffff, 1 );
+				renderer2 = new THREE.WebGLRenderer( { canvas: canvas2, antialias: true } );
+				renderer2.setClearColor( 0xffffff, 1 );
+				renderer3 = new THREE.WebGLRenderer( { canvas: canvas3, antialias: true } );
+				renderer3.setClearColor( 0xffffff, 1 );
+				renderer4 = new THREE.WebGLRenderer( { canvas: canvas4, antialias: true } );
+				renderer4.setClearColor( 0xffffff, 1 );
+			
+				return{
+					renderer1: renderer1, 
+					renderer2: renderer2,
+					renderer3: renderer3,
+					renderer4: renderer4
+				}
+			}	
+					
+			function AddShaderObjects(scene, materialBlob, i){//adding the blobs
+				var newMaterial = materialBlob.clone();
+				newMaterial.uniforms = uniforms[i];
+				var geometry = new THREE.PlaneBufferGeometry(window.innerWidth, window.innerHeight);
+				scene.add( new THREE.Mesh( geometry, newMaterial ) );		
+			}			
+			function CreateScenesInTableElements(number_of_scenes, materialBlob){//scenes, cameras, controls, lights, objects
+				for ( var i =  0; i < number_of_scenes; i ++ ) {
+					var scene = new THREE.Scene();
+// 					scene.userData.element =  document.getElementById( "#drop-box"+i+1 );
+					
+					{//cameras, controls
+					var camera = new THREE.PerspectiveCamera( 50, 1, 1, 10 );
+					camera.position.z = 2;
+					scene.userData.camera = camera;
+
+		// 			var controls = new THREE.OrbitControls( scene.userData.camera );//(scene.userData.camera, scene.userData.element)//to manipulate the shader plane
+		// 			controls.minDistance = 2;
+		// 			controls.maxDistance = 5;
+		// 			controls.enablePan = false;
+		// 			controls.enableZoom = false;
+		// 			scene.userData.controls = controls;
+					}
+					
+					{//lights
+					scene.add( new THREE.HemisphereLight( 0xaaaaaa, 0x444444 ) );
+					var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+					light.position.set( 1, 1, 1 );
+					scene.add( light );
+					}
+
+					{//objects
+					x = AddShaderObjects(scene, materialBlob,i);
+					}					
+					
+					scenes.push( scene );
+				}//for scene
+			}			
+					
+			function animate() {
+				render();
+				requestAnimationFrame( animate );
+			}
+			function render() {
+				var delta = 5 * clock.getDelta();
+				
+				for(i=0;i<number_of_scenes;i++){
+					uniforms[i].time.value += Math.random()*0.3 * delta;//Math.random() * (max - min) + min;
+				}
+				
+				nums = 0;
+				scenes.forEach( function( scene ) {
+					nums ++;
+					var camera = scene.userData.camera;
+
+					if(nums == 1) renderer1.render( scene, camera );
+					if(nums == 2) renderer2.render( scene, camera );
+					if(nums == 3) renderer3.render( scene, camera );
+					if(nums == 4) renderer4.render( scene, camera );
+				});
+			}
+		</script>
+		<script>//webgl main (scenes in canvases) (paint splash)
+			{//parameters
+				var customWidth = getWindowDimensions().width;
+				var customHeight = getWindowDimensions().height;
+				console.log(customWidth, customHeight);			
+
+				var canvas1 = document.getElementById( "c1" );
+				var canvas2 = document.getElementById( "c2" );
+				var canvas3 = document.getElementById( "c3" );
+				var canvas4 = document.getElementById( "c4" );
+				
+				var clock = new THREE.Clock();
+				var number_of_scenes = 4;
+				var scenes = [];
+				var nums;//scene counter
+			}
+			{//shader material (blob) - separate uniforms for each of the material clones
+				var uniforms = [];	
+				
+				var colorArray = [];
+				colorArray[0] = new THREE.Color( 0xff0000 );
+				colorArray[1] = new THREE.Color( 0x00ff00 );
+				colorArray[2] = new THREE.Color( 0x0000ff );
+				colorArray[3] = new THREE.Color( 0xffffff  );
+				var sceneN=0;
+				
+				var blobStartX = -90;
+				var blobStepX = 0;
+				var blobStartY = -150;
+				var blobSizeX = 600;
+				var blobSizeY = 600;
+			
+				//separate uniforms for each of the material clones
+				for(i=0;i<number_of_scenes;i++){
+					var posX = blobStartX + i*blobStepX;
+					var posY = blobStartY;
+					var col = colorArray[i];
+					sceneN = i;
+
+					uniforms[i] = {
+						time: { type: "f", value: 0.0 },
+						resolution: { type: "v2", value: new THREE.Vector2() },
+						posX: { type: "f", value: posX },
+						posY: { type: "f", value: posY },
+						color: { type: "c", value: col },
+						scene: { type: "f", value: sceneN },
+					};
+					uniforms[i].resolution.value.x = blobSizeX;
+					uniforms[i].resolution.value.y = blobSizeY;
+
+					if(i==3){//last scene (rainbow blob) has different parameters
+						blobStartX = 0;//-90;
+						blobStartY = -160;//-160;
+						blobSizeX = 900;
+						blobSizeY = 900;
+						uniforms[i].posX.value = blobStartX;
+						uniforms[i].posY.value = blobStartY;
+						uniforms[i].resolution.value.x = blobSizeX;
+						uniforms[i].resolution.value.y = blobSizeY;						
+					}
+				}
+				
+				//paint splash (blob)
+				var materialBlob = new THREE.ShaderMaterial({
+					uniforms: uniforms[0],
+					vertexShader: document.getElementById( 'vertexShaderBlob' ).textContent,
+					fragmentShader: document.getElementById( 'fragmentShaderBlob' ).textContent
+				});	
+			}
+				
+			x = InitThreeCanvasRenderers(canvas1, canvas2, canvas3, canvas4);
+			x = CreateScenesInTableElements(number_of_scenes, materialBlob);
+			animate();
+		</script>
+
+		<script>//fill the AdjustTable using the json base
+			{//parameters
+			var json_base = "image_data_sets.json";
+			
+			//5 images possible (reflected in json base)
+			var NI = 5; //if this is changed, the json file needs to change, and s6,s7,etc. need to be added to the css and as draggable in dragFunction()
+			var image_empty_default = "Images/data/empty.png";
+			var ImagesArray = [image_empty_default,image_empty_default,image_empty_default,image_empty_default,image_empty_default];
+			var ImageTypeArray = ["","","","",""];//image types (one from 7: (g,x,u,v,i,m,r))
+			var ImageLeftArray = ["","","","",""];//left positions (within the EM image)
+			var ImageTopArray = ["","","","",""];//top positions (within the EM image)			
+			
+			var text_title_EN = 'Assign the observed images to the color channels';//Choose your observations and assign them to the color channels
+			var text_title_DE = 'Ordnen Sie die beobachteten Bilder einem Farbkanal zu';//Wählen Sie Beobachtungsdaten und ordnen Sie diese einem Farbkanal zu
+			var text_title_size_percent = 175;
+			
+			var image_EM_EN = "Images/EMspectrum_EN.png";
+			var image_EM_DE = "Images/EMspectrum_DE.png";
+			
+			//composite image
+			//dimensions of the resulting composite image within UpdateCompositeImage()
+			var wanted_image_width = 700;
+			var wanted_image_height = 700; 
+			
+			//drag and drop
+			var image_drag_size = 200;
+			}
+			
+			window.onload = function(e) {
+				htmlInsertTitle();
+				htmlInsertEMImage();
+				mapEMimage();
+				
+				initTouch();
+				dragFunction();
+				dropFunction();
+				disableNonImageDrag();
+				
+				dialogUpdatePosition();//sets the dialog position
+				AddListeners();
+				
+				var recieved_id = getUrlVars()["id"];
+				$.getJSON(json_base, function(json) {
+					var length = json.length;//number of data sets (works with array, not objects!)
+					for (i=0;i<length;i++) {//go through all objects
+						var id = json[i].id; 
+						if(id == recieved_id) {//if the set is correct
+							//var description = json[i].description;
+							var emptyImage = json[i].empty;
+
+							for (j=0;j<NI;j++) {//loop through 5 possible images (images within a set) and fill arrays
+								var ImageName = json[i].images[j].name;
+								if(ImageName != ""){//read only the existing images
+									var ImageType = json[i].images[j].type;//image types (one from 7: (g,x,u,v,i,m,r))
+									var ImagePositionLeft = json[i].images[j].coor.x;//left positions (within the EM image)
+									var ImagePositionTop = json[i].images[j].coor.y;//top positions (within the EM image)
+			// 						console.log(ImageName, ImageType, ImagePositionLeft, ImagePositionTop);
+							
+									ImagesArray[j] = ImageName;
+									ImageTypeArray[j] = ImageType;//image types (one from 7: (g,x,u,v,i,m,r))
+									ImageLeftArray[j] = ImagePositionLeft;//left positions (within the EM image)
+									ImageTopArray[j] = ImagePositionTop;//top positions (within the EM image)
+								}
+							}//images within a set
+
+							{//creating the html elements of the data (filling the AdjustTable div)
+							//image			ImagesArray
+							//image id's 		from loop index				s1, s2, s3, s4, s5 (unique)
+							//image alt's		ImageTypeArray				possible (g,x,u,v,i,m,r) (non-unique)
+							//div positions		ImageLeftArray, ImageTopArray		top, left
+								
+							var html = '';//have a div wrapper element so that the image doesn't have to be dirrectly positioned
+							////html += '<div class="button" style="position: absolute; left: 450px; top: 250px;"><img draggable="true" alt="x" id="s1" style="position: relative;"/></div>';
+							for (j=0;j<NI;j++) {//loop through 5 possible images and create html elements
+								if(ImageTypeArray[j]!=""){
+									var k=j+1;//for image id (s1,...,s5)
+									html += '<div class="button" style="position: absolute; left:'+ImageLeftArray[j]+'px; top:'+ImageTopArray[j]+'px;"><img draggable="true" alt="'+ImageTypeArray[j]+'"id="s'+k+'" style="position: relative;"/></div>';
+									//console.log(ImagesArray[j], ImageTypeArray[j], ImageLeftArray[j], ImageTopArray[j]);
+										
+									//this is done after the html is added
+			// 						var element_id = ImageTypeArray[j];
+			// 						if(document.getElementById(element_id)){document.getElementById(element_id).src = ImagesArray[j]};
+								}
+							}
+								
+							var results = document.getElementById("AdjustTable");
+							results.innerHTML += html;	
+							dragFunction();//drag and drop
+							}
+
+							{//this puts the content into the upper image elements (s1..s5)
+							//has to be done after the structure is added to the html code
+							for (j=0;j<NI;j++) {
+								if(ImageTypeArray[j]!=""){
+									var k=j+1;
+									var element_id = 's'+k;
+									document.getElementById(element_id).src = ImagesArray[j];
+								}
+							}
+							}
+
+							{//matching empty image into lower drop boxes
+							if(document.getElementById("test1")){
+								document.getElementById("test1").src = emptyImage;//from the set
+							}
+							if(document.getElementById("test2")){
+								document.getElementById("test2").src = emptyImage;//from the set
+							}
+							if(document.getElementById("test3")){
+								document.getElementById("test3").src = emptyImage;//from the set
+							}
+							}
+						}//set
+					}//go through all objects
+				});//json
+			}//window.onload()
+		</script>
+		<script>//functions: image processing, drag and drop, html, touch
+			function getUrlVars() {
+				var vars = {};
+				var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi,    
+					function(m,key,value) {
+						vars[key] = value;
+					}
+				);
+				return vars;
+			}
+			
+			//touch
+			function touchHandler(event){//mapping touch events to mouse events 
+				var touches = event.changedTouches, first = touches[0], type = "";
+			
+				switch(event.type){
+					case "touchstart": type = "mousedown"; break;
+					case "touchmove":  type="mousemove"; break;
+					case "touchend":   type="mouseup"; break;
+					default: return;
+				}
+				var simulatedEvent = document.createEvent("MouseEvent");
+				simulatedEvent.initMouseEvent(type, true, true, window, 1,
+										first.screenX, first.screenY,
+										first.clientX, first.clientY, false,
+										false, false, false, 0, null);
+				first.target.dispatchEvent(simulatedEvent);
+				event.preventDefault();
+			}
+			function initTouch(){
+				document.addEventListener("touchstart", touchHandler, true);
+				document.addEventListener("touchmove", touchHandler, true);
+				document.addEventListener("touchend", touchHandler, true);
+				document.addEventListener("touchcancel", touchHandler, true);
+			}
+			
+			//html
+			function htmlInsertTitle(){//into TopDiv
+				var text_html = "";
+				if(getUrlVars()["lang"] == "en") text_html = "<font style='font-size: "+text_title_size_percent+"%;'>"+text_title_EN+"<br><br></font>";
+				if(getUrlVars()["lang"] == "de") text_html = "<font style='font-size: "+text_title_size_percent+"%;'>"+text_title_DE+"<br><br></font>";
+				if(!getUrlVars()["lang"]) text_html = "<font style='font-size: "+text_title_size_percent+"%;'>"+text_title_EN+"<br><br></font>";
+				
+				var topdiv = document.getElementById("TopDiv");
+				topdiv.insertAdjacentHTML("afterbegin", text_html);//topdiv.innerHTML += text_html;
+			}
+			function htmlInsertEMImage(){//into EM
+				var emImg = document.getElementById("EM");
+				if(getUrlVars()["lang"] == "en") emImg.src=image_EM_EN;
+				if(getUrlVars()["lang"] == "de") emImg.src=image_EM_DE;
+				if(!getUrlVars()["lang"]) emImg.src=image_EM_EN;
+			}
+			
+			//image processing functions
+			function red(src){// Red Channel canvas method
+				var canvas = document.createElement('canvas');
+				var ctx = canvas.getContext('2d');
+				var imgObj = new Image();
+				imgObj.src = src;
+				canvas.width = imgObj.width;
+				canvas.height = imgObj.height; 
+				ctx.drawImage(imgObj, 0, 0); 
+				var imgPixels = ctx.getImageData(0, 0, canvas.width+1, canvas.height+1);
+				for(var y = 0; y < imgPixels.height; y++){
+					for(var x = 0; x < imgPixels.width; x++){
+						var i = (y * 4) * imgPixels.width + x * 4;
+// 						var avg = (imgPixels.data[i] + imgPixels.data[i + 1] + imgPixels.data[i + 2]) / 3;
+						imgPixels.data[i] = imgPixels.data[i];
+						imgPixels.data[i + 1] = 0;
+						imgPixels.data[i + 2] = 0;
+					}
+				}
+				ctx.putImageData(imgPixels, 0, 0, 0, 0, imgPixels.width, imgPixels.height);
+				return canvas.toDataURL();
+			}   
+			function green(src){// Green Channel canvas method
+				var canvas = document.createElement('canvas');
+				var ctx = canvas.getContext('2d');
+				var imgObj = new Image();
+				imgObj.src = src;
+				canvas.width = imgObj.width;
+				canvas.height = imgObj.height; 
+				ctx.drawImage(imgObj, 0, 0); 
+				var imgPixels = ctx.getImageData(0, 0, canvas.width+1, canvas.height+1);
+				for(var y = 0; y < imgPixels.height; y++){
+					for(var x = 0; x < imgPixels.width; x++){
+						var i = (y * 4) * imgPixels.width + x * 4;
+						imgPixels.data[i] = 0;
+						imgPixels.data[i + 1] = imgPixels.data[i + 1] ;
+						imgPixels.data[i + 2] = 0;
+					}
+				}
+				ctx.putImageData(imgPixels, 0, 0, 0, 0, imgPixels.width, imgPixels.height);
+				return canvas.toDataURL();
+			}  
+			function blue(src){// Blue Channel canvas method
+				var canvas = document.createElement('canvas');
+				var ctx = canvas.getContext('2d');
+				var imgObj = new Image();
+				imgObj.src = src;
+				canvas.width = imgObj.width;
+				canvas.height = imgObj.height; 
+				ctx.drawImage(imgObj, 0, 0); 
+				var imgPixels = ctx.getImageData(0, 0, canvas.width+1, canvas.height+1);
+				for(var y = 0; y < imgPixels.height; y++){
+					for(var x = 0; x < imgPixels.width; x++){
+						var i = (y * 4) * imgPixels.width + x * 4;
+						imgPixels.data[i] = 0;
+						imgPixels.data[i + 1] = 0;
+						imgPixels.data[i + 2] = imgPixels.data[i + 2];
+					}
+				}
+				ctx.putImageData(imgPixels, 0, 0, 0, 0, imgPixels.width, imgPixels.height);
+				return canvas.toDataURL();
+			}
+			function UpdateCompositeImage(element){//src1, src2, src3	(drop-box1, drop-box2, drop-box3)
+				setTimeout( function(){ //important!!
+					var el = document.getElementById(element);
+
+					{//reading the three sources
+						var box1 = document.getElementById('drop-box1');
+						var im1 = box1.childNodes; 
+						var box2 = document.getElementById('drop-box2');
+						var im2 = box2.childNodes; 
+						var box3 = document.getElementById('drop-box3');
+						var im3 = box3.childNodes; 
+					}
+					
+					{//3x canvas, context, image source
+					var canvas = document.createElement('canvas');
+					var ctx = canvas.getContext('2d');
+					var imgObj = new Image();
+					imgObj.src = im1[0].src;
+					canvas.width = wanted_image_width;
+					canvas.height = wanted_image_height; 			
+					ctx.drawImage(imgObj, 0, 0, wanted_image_width, wanted_image_height); 
+					var imgPixels = ctx.getImageData(0, 0, canvas.width+1, canvas.height+1);
+					
+					var canvas2 = document.createElement('canvas');
+					var ctx2 = canvas2.getContext('2d');		
+					var imgObj2 = new Image();
+					imgObj2.src = im2[0].src;
+					canvas2.width = wanted_image_width;
+					canvas2.height = wanted_image_height;
+					ctx2.drawImage(imgObj2, 0, 0, wanted_image_width, wanted_image_height); 
+					var imgPixels2 = ctx2.getImageData(0, 0, canvas2.width+1, canvas2.height+1);
+				
+					var canvas3 = document.createElement('canvas');
+					var ctx3 = canvas3.getContext('2d');		
+					var imgObj3 = new Image();
+					imgObj3.src = im3[0].src;
+					canvas3.width = wanted_image_width;
+					canvas3.height = wanted_image_height;			
+					ctx3.drawImage(imgObj3, 0, 0, wanted_image_width, wanted_image_height);
+					var imgPixels3 = ctx3.getImageData(0, 0, canvas3.width+1, canvas3.height+1);	
+					}
+					
+					{//process
+					for(var y = 0; y < imgPixels.height; y++){
+						for(var x = 0; x < imgPixels.width; x++){
+							var i = (y * 4) * imgPixels.width + x * 4;
+							var avg = (imgPixels.data[i] + imgPixels2.data[i + 1] + imgPixels3.data[i + 2]) / 3;
+							
+							imgPixels.data[i] = imgPixels.data[i];//this one is from drop box 1 and only has a red channel
+							imgPixels.data[i + 1] = imgPixels2.data[i+1];//this one is from drop box 2 and only has a green channel
+							imgPixels.data[i + 2] = imgPixels3.data[i+2];//this one is from drop box 3 and only has a blue channel
+							imgPixels.data[i + 3] = 255;//if using transparent empty images I also need to set the alpha channel
+						}
+					}
+					ctx.putImageData(imgPixels, 0, 0, 0, 0, imgPixels.width, imgPixels.height);
+					}
+
+					{//replace content
+					el.replaceChild(canvas, el.childNodes[0]);
+					}
+				},100);//set timeout - important to give it some time, otherwise the image might not appear
+			}	
+			
+			//drag and drop (jquery UI, no dataTransfer)
+			function dragCommand(event, ui) {//size of the dragged object, change dialog texts (#dialogDefault, xref)
+				$(ui.helper).width(image_drag_size);
+				if(event.target.id){
+				    if((getUrlVars()["lang"] == "en") || (!getUrlVars()["lang"])){ 
+					if($('#'+event.target.id)[0].alt == 'g') $('#dialogDefault').html(xref['gamma']);
+					if($('#'+event.target.id)[0].alt == 'x') $('#dialogDefault').html(xref['xray']);
+					if($('#'+event.target.id)[0].alt == 'u') $('#dialogDefault').html(xref['ultra']);
+					if($('#'+event.target.id)[0].alt == 'v') $('#dialogDefault').html(xref['visible']);
+					if($('#'+event.target.id)[0].alt == 'i') $('#dialogDefault').html(xref['infra']);
+					if($('#'+event.target.id)[0].alt == 'm') $('#dialogDefault').html(xref['micro']);
+					if($('#'+event.target.id)[0].alt == 'r') $('#dialogDefault').html(xref['radio']);
+				    }
+				    if(getUrlVars()["lang"] == "de"){
+					if($('#'+event.target.id)[0].alt == 'g') $('#dialogDefault').html(xref_DE['gamma']);
+					if($('#'+event.target.id)[0].alt == 'x') $('#dialogDefault').html(xref_DE['xray']);
+					if($('#'+event.target.id)[0].alt == 'u') $('#dialogDefault').html(xref_DE['ultra']);
+					if($('#'+event.target.id)[0].alt == 'v') $('#dialogDefault').html(xref_DE['visible']);
+					if($('#'+event.target.id)[0].alt == 'i') $('#dialogDefault').html(xref_DE['infra']);
+					if($('#'+event.target.id)[0].alt == 'm') $('#dialogDefault').html(xref_DE['micro']);
+					if($('#'+event.target.id)[0].alt == 'r') $('#dialogDefault').html(xref_DE['radio']);			    
+				    }
+				}
+			}
+			function dragFunction(){// for s1,...,s5
+				$("#s1, #s2, #s3, #s4, #s5" ).draggable({//if NI is changed additional sX needs to be added here
+					revert: 'invalid', // to reset item location if not dropped
+					helper: "clone",
+					drag: dragCommand // size of the dragged object, change dialog texts
+				});	
+			}
+			function dropFunction() {//for test1, test2, test3 (updating composite image in drop-box4)
+				$("#test1").droppable({
+					over: function(event, ui) {
+						$(this).css({'background':'#3399ff'});// Creating an effect on dragging over the Drop area.
+					},	
+					out: function (event, ui){
+						$(this).css({'background':'transparent'});// resetting CSS styles for Drop area.
+					},
+					drop: function(event, ui) {
+						$(this).css({'background':'transparent'});
+						$(this).attr("src", red(ui.draggable.attr("src")));
+						//Update composite image
+						var element = 'drop-box4';
+						UpdateCompositeImage(element);//,clone[0].src,clone[0].src,clone[0].src
+					},
+					tolerance: 'pointer'
+				});			
+				$("#test2").droppable({
+					over: function(event, ui) {
+						$(this).css({'background':'#3399ff'});
+					},		
+					out: function(event, ui) {
+						$(this).css({'background':'transparent'});
+					},				
+					drop: function(event, ui) {
+						$(this).css({'background':'transparent'});
+						$(this).attr("src", green(ui.draggable.attr("src")));
+						//Update composite image
+						var element = 'drop-box4';
+						UpdateCompositeImage(element);//,clone[0].src,clone[0].src,clone[0].src			
+					},
+					tolerance: 'pointer'
+				});			
+				$("#test3").droppable({
+					over: function(event, ui) {
+						$(this).css({'background':'#3399ff'});
+					},		
+					out: function(event, ui) {
+						$(this).css({'background':'transparent'});
+					},					
+					drop: function(event, ui) {
+						$(this).css({'background':'transparent'});
+						$(this).attr("src", blue(ui.draggable.attr("src")));
+						//Update composite image
+						var element = 'drop-box4';
+						UpdateCompositeImage(element);//,clone[0].src,clone[0].src,clone[0].src			
+					},
+					tolerance: 'pointer'
+				});
+			}
+		</script>
+		<script>//jquery dialog, image map
+			$(function(){
+				//dialog
+				$("#dialogDefault").dialog({
+					autoOpen: true,
+					modal: false,
+					dialogClass: "dlg-no-title",
+					resizable: false,
+					height: 200,//220px dialogSpace td
+					width: 860,	
+// 		 			position: [dialog_left,dialog_up],//left, top
+					clickOutside: true, // clicking outside the dialog will close it
+				});
+				
+				//image map (rwdImageMaps+maphilight)
+				$('.map').maphilight();
+			});//function
+		</script>
+		<script>//functions: dialog and image map
+			function dialogUpdatePosition(){//(#dialogDefault)
+				{//position of a id = dialog-space td element - Commented Out
+// 					var $dialogSpace = $('#dialogSpace');
+// 					var rowPos = $dialogSpace.position();
+// 					bottomTop = rowPos.top;
+// 					bottomLeft = rowPos.left;
+// 					bottomRight = rowPos.right;
+				}
+				$("#dialogDefault").dialog({position: [1040,52]});//update dialog position on resize (missbehaves on zoom in)
+			}
+			function disableNonImageDrag(){
+				$(document).on("dragstart", function(e) {//disable dialog drag (firefox problem) - disable drag except on images
+					if (e.target.nodeName.toUpperCase() != "IMG") {
+						return false;
+					}
+				});
+			}
+			function AddDialog(elementName, content){
+				$(elementName).empty();
+				$(content).appendTo(elementName);
+				
+				$(document).ready(function() {//cannot call methods on dialog prior to initialization
+					$(elementName).dialog("open");
+				});	
+			}
+			function dialogOpen(){//add default dialog texts (#dialogDefault)
+				if(getUrlVars()["lang"] == "en") AddDialog("#dialogDefault", text_default_html);
+				if(getUrlVars()["lang"] == "de") AddDialog("#dialogDefault", text_default_html_DE);
+				if(!getUrlVars()["lang"]) AddDialog("#dialogDefault", text_default_html);
+			}
+			dialogOpen();//add default dialog texts
+			
+			function onWindowResize(){
+				dialogUpdatePosition();//update dialog position 
+			}			
+			function AddListeners(){
+				window.addEventListener( 'resize', onWindowResize, false );
+			}	
+			
+			function mapEMimage(){//image map (rwdImageMaps+maphilight)//using dialog texts (#dialogDefault, xref)
+				$(document).ready(function(e) {
+					$('#EM').rwdImageMaps();
+					
+					$('area').on('touchstart click', function(e) {
+						var key = $(this).attr('name');
+
+						if(getUrlVars()["lang"] == "en") $('#dialogDefault').html(xref[key])[0].innerHTML;
+						if(getUrlVars()["lang"] == "de") $('#dialogDefault').html(xref_DE[key])[0].innerHTML;
+						if(!getUrlVars()["lang"]) $('#dialogDefault').html(xref[key])[0].innerHTML;	
+					});
+				});
+			}
+		</script>
+		
+		<div id="resetButton"></div>
+		<div id="languageButton"></div>
+		<div id="dialogHelp" title="Dialog" align="center" ></div>	
+		<div id="infoButton"></div>		
+		<div id="previousButton"></div>	
+		<script>//standard buttons (don't forget:
+				//* the images (4x icons, 2x help/info screens), 
+				//* css elements (.helper, #dialogHelp), 
+				//* adjust with the other URL parameters (in #languageButton),
+				//* need customHeight, customWidth (customWidth = getWindowDimensions().width;) ; (also uses controls - can be commented out if not there)
+				//)
+
+				function AddDialog(elementName, content){//needs .helper class
+					$(elementName).empty();
+					
+					//vertical alignment of the image within a div
+					var content2 = "<span class='helper'></span>";
+					$(content2).appendTo(elementName);
+					
+					$(content).appendTo(elementName);
+					$(elementName).dialog("open");
+				}
+				
+				{///parameters (using customHeight, customWidth)
+				//button positioning
+				var standard1_left = 6;
+				var standard2_left = 106;//1554;
+				var standard3_left = 206;
+				var standard4_left = 506;//previous button
+				var standard_bottom = 15;
+				
+				//dialog parameters
+				var dialog_height = customHeight;
+				var dialog_width = customWidth-4;
+				var dialog_left = 0;
+				var dialog_up = 0;			
+				}
+				{//load images
+				var button_reset = "Images/Icons/icon_blue_reload.png";
+				var button_info = "Images/Icons/icon_blue_help.png";
+				var button_previous = "Images/Icons/icon_blue_home.png";
+				var button_language = "Images/Icons/icon_blue_DE.svg";	
+				var lang = "en";			
+				
+				//language button image //change icon image (offer opposite image)
+				if(getUrlVars()["lang"] == "en") button_language = "Images/Icons/icon_blue_DE.svg";
+				if(getUrlVars()["lang"] == "de") button_language = "Images/Icons/icon_blue_EN.svg";
+				
+				//help screen images
+				var info_imageEN ='Images/0807_astronomical_image_processing_help_screens_ES_interactives_EN_02.png';
+				var info_imageDE ='Images/0807_astronomical_image_processing_help_screens_ES_interactives_DE_02.png';	
+				var info_image_width = 1700;//1500;
+				}			
+
+				$(function() 
+				{
+					{//reset button
+					$("#resetButton")
+					.text("") // sets text to empty
+					.css(
+						{ "z-index":"2",
+						"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+						"position":"absolute", "bottom":standard_bottom+"px", "left":standard1_left+"px", 
+						"border": "none"
+						}) // adds CSS
+					.append("<img width='80' height='80' src="+button_reset+" />")
+					.button()
+					.bind("click touchstart",
+						function() { 
+							window.location.reload(true);
+						});
+					}
+					
+					{//language change button (adjust to other URL parameters!)
+					$("#languageButton")
+					.text("") // sets text to empty
+					.css(
+						{ "z-index":"2",
+						"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+						"position":"absolute", "bottom":standard_bottom+"px", "left":standard2_left+"px", 
+						"border": "none"
+						}) // adds CSS
+					.append("<img width='80' height='80' src="+button_language+" />")
+					.button()
+					.bind("click touchstart",
+						function() { 
+							//reload with different url parameter (change language)
+							if(getUrlVars()["lang"] == "en") lang="de";
+							if(getUrlVars()["lang"] == "de") lang="en";
+							if(!getUrlVars()["lang"]) lang="de";//had default values (en as default)
+							
+							if(getUrlVars()["HB_APP_ID"] && getUrlVars()["HB_URL"]){
+								var HB_APP_ID = getUrlVars()["HB_APP_ID"];
+								var HB_URL = getUrlVars()["HB_URL"];
+							}
+							if(!getUrlVars()["HB_APP_ID"] || !getUrlVars()["HB_URL"]){
+								var HB_APP_ID = heartbeat.appId;
+								var HB_URL = heartbeat.url;
+							}
+							var recieved_id = getUrlVars()["id"];
+							//console.log("recieved_id: ", recieved_id);
+							window.location.href = window.location.pathname+"?id="+recieved_id+"&lang="+lang+"&HB_APP_ID="+HB_APP_ID+"&HB_URL="+HB_URL;
+						});
+					}
+					
+					{//info/help dialog - needs CSS setup and dialog parameters
+					$("#dialogHelp").dialog({
+						autoOpen: false,
+						modal: false,
+						dialogClass: "dlg-no-title",
+						resizable: false,
+						height: dialog_height,
+						width: dialog_width,
+						position: [dialog_left,dialog_up],//left, top
+						clickOutside: true, // clicking outside the dialog will close it
+						clickOutsideTrigger: "#infoButton"  // Element (id or class) that triggers the dialog opening 
+					})
+					.mouseenter(function(){
+					})
+					.mouseleave(function(){
+					})
+					.bind("click touchstart",
+						function() { 
+							$("#dialogHelp").dialog("close");//close dialog
+						});	
+					}
+					
+					{//info/help button - needs #dialogHelp and AddDialog() function
+					$("#infoButton")
+					.text("") // sets text to empty
+					.css(
+						{ "z-index":"2",
+						"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+						"position":"absolute", "bottom":standard_bottom+"px", "left":standard3_left+"px", 
+						"border": "none"
+						}) // adds CSS
+					.append("<img width='80' height='80' src="+button_info+" />")
+					.button()
+					.bind("click touchstart",
+						function() { 
+							if(getUrlVars()["lang"] == "en") AddDialog("#dialogHelp", "<img src="+info_imageEN+" width="+info_image_width+" style='vertical-align:middle;'></img>");
+							if(getUrlVars()["lang"] == "de") AddDialog("#dialogHelp", "<img src="+info_imageDE+" width="+info_image_width+" style='vertical-align:middle;'></img>");
+							if(!getUrlVars()["lang"]) AddDialog("#dialogHelp", "<img src="+info_imageEN+" width="+info_image_width+" style='vertical-align:middle;'></img>");//had default values (en as default)
+						});
+					}
+					
+					{//previous button
+					$("#previousButton")
+					.text("") // sets text to empty
+					.css(
+						{ "z-index":"2",
+						"background":"rgba(0,0,0,0)", "opacity":"0.9", 
+						"position":"absolute", "bottom":standard_bottom+"px", "left":standard4_left+"px", 
+						"border": "none"
+						}) // adds CSS	
+					.append("<img width='80' height='80' src="+button_previous+" />")					
+					.button()
+					.bind("click touchstart",
+						function() { 
+							//load with same url parameter (keep language)
+							if(getUrlVars()["lang"] == "en") lang="en";
+							if(getUrlVars()["lang"] == "de") lang="de";
+							if(!getUrlVars()["lang"]) lang="en";//had default values (en as default)
+							
+							window.location.href = "webgl_AstroImage_p1.html?lang="+lang;//window.history.back();
+						});
+					}
+				});
+		</script>		
+	</body>
+</html>
